@@ -71,12 +71,27 @@
                 } else {
                   sourceTable = '[measurement-lab:m_lab.' + formatted_date + ']';
                 }
+                var isSelected = ((currentDate.getYear() == todayMonth.getYear()) &&
+                                  (currentDate.getMonth() == todayMonth.getMonth()));
+
+                // Workaround for 2015_04 not being ready yet.
+                // TODO: Remove when we have table publication fixed.
+                isSelected = ((currentDate.getFullYear() == 2015) &&
+                              (currentDate.getMonth() == 2));
+
 
                 $('#dateList').append($('<option/>', {
                     value: sourceTable,
                     text: formatted_date,
-                    selected: (currentDate.getYear() == todayMonth.getYear()) && (currentDate.getMonth() == todayMonth.getMonth()),
+                    selected: (isSelected),
                 }));
+
+                // Workaround for 2015_04 not being ready yet.
+                // TODO: Remove when we have table publication fixed.
+                if (isSelected) {
+                  break;
+                }
+
                 currentDate.setMonth(currentDate.getMonth() + 1); // TODO: Fix this.
             }
         };
