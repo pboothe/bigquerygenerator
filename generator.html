@@ -62,8 +62,18 @@
                     month = '0' + month;
                 }
                 formatted_date = currentDate.getFullYear() + '_' + month;
+
+                // Workaround for current schism in table names after 2015_02.
+                // TODO: Fix this once schism is resolved.
+                var sourceTable = ''
+                if (currentDate > new Date(2015, 1, 1)) {
+                  sourceTable = '[plx.google:m_lab.' + formatted_date + '.all]';
+                } else {
+                  sourceTable = '[measurement-lab:m_lab.' + formatted_date + ']';
+                }
+
                 $("#dateList").append($('<option/>', {
-                    value: formatted_date,
+                    value: sourceTable,
                     text: formatted_date,
                     selected: (currentDate.getYear() == todayMonth.getYear()) && (currentDate.getMonth() == todayMonth.getMonth()),
                 }));
@@ -91,6 +101,19 @@
             $("#averageRTT").prop('disabled', $("#c2s").is(':checked'));
             $("#minimumRTT").prop('disabled', $("#c2s").is(':checked'));
             $("#reachedCongestion").prop('disabled', $("#c2s").is(':checked'));
+
+            // Figure out if geolocation bug affects this table.
+            // TODO: Remove this hacky workaround.
+            var dateStr = /\d{4}_\d{2}/.exec($('#dateList').val())[0];
+            var dateParts = dateStr.split('_');
+            var year = parseInt(dateParts[0]);
+            var month = parseInt(dateParts[1]);
+            var selectedDate = new Date(year, month, 1);
+            var geolocationAvailable = true;
+            if (selectedDate < new Date(2012, 5, 1)) {
+              geolocationAvailable = false;
+            }
+            $('#clientGeolocation').prop('disabled', !geolocationAvailable);
         };
         var updateQuery = function () {
             selectAttributes = []
@@ -121,7 +144,8 @@
             if ($("#clientOs").is(':checked')) {
                 selectAttributes.push('connection_spec.client_os AS client_os');
             }
-            if ($("#clientGeolocation").is(':checked')) {
+            if (!$("#clientGeolocation").is(':disabled') &&
+                 $("#clientGeolocation").is(':checked')) {
                 selectAttributes.push('connection_spec.client_geolocation.latitude AS latitude');
                 selectAttributes.push('connection_spec.client_geolocation.longitude AS longitude');
             }
@@ -227,8 +251,7 @@
                 whereClauses.unshift(fieldName + ' IS NOT NULL');
             });
 
-            sourceTable = '[measurement-lab:m_lab.' + $("#dateList").val() + ']';
-            //sourceTable = '[plx.google:m_lab.' + $("#dateList").val() + '.all]';
+            sourceTable = $("#dateList").val();
 
             query = ''
             query += 'SELECT\n';
