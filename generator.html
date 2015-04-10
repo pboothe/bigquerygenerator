@@ -109,6 +109,18 @@
             if ($("#clientIPv4").is(':checked')) {
                 selectAttributes.push('web100_log_entry.connection_spec.remote_ip AS client_ip_v4');
             }
+            if ($("#clientHostname").is(':checked')) {
+                selectAttributes.push('connection_spec.client_hostname AS client_hostname');
+            }
+            if ($("#clientApplication").is(':checked')) {
+                selectAttributes.push('connection_spec.client_application AS client_application');
+            }
+            if ($("#clientBrowser").is(':checked')) {
+                selectAttributes.push('connection_spec.client_browser AS client_browser');
+            }
+            if ($("#clientOs").is(':checked')) {
+                selectAttributes.push('connection_spec.client_os AS client_os');
+            }
             if ($("#clientGeolocation").is(':checked')) {
                 selectAttributes.push('connection_spec.client_geolocation.latitude AS latitude');
                 selectAttributes.push('connection_spec.client_geolocation.longitude AS longitude');
@@ -237,6 +249,10 @@
             addCheckbox($("#optionsValues"), 'logTime', 'Test Time', false);
             addCheckbox($("#optionsValues"), 'serverIPv4', 'Server IPv4 Address', false);
             addCheckbox($("#optionsValues"), 'clientIPv4', 'Client IPv4 Address', false);
+            addCheckbox($("#optionsValues"), 'clientHostname', 'Client Hostname', false);
+            addCheckbox($("#optionsValues"), 'clientApplication', 'Client Application Name', false);
+            addCheckbox($("#optionsValues"), 'clientBrowser', 'Client Browser', false);
+            addCheckbox($("#optionsValues"), 'clientOs', 'Client OS', false);
             addCheckbox($("#optionsValues"), 'clientGeolocation', 'Client Geolocation', false);
             addCheckbox($("#optionsValues"), 'throughput', 'Throughput', true);
             addCheckbox($("#optionsValues"), 'averageRTT', 'Average RTT', true);
