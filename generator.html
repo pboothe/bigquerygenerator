@@ -238,8 +238,8 @@
                     nonNullFields['web100_log_entry.snap.SndLimTimeSnd'] = true;
                     whereClauses.push(
                         '(web100_log_entry.snap.SndLimTimeRwin +\n' +
-                        '    web100_log_entry.snap.SndLimTimeCwnd +\n' +
-                        '    web100_log_entry.snap.SndLimTimeSnd) >= ' + minDuration);
+                        '       web100_log_entry.snap.SndLimTimeCwnd +\n' +
+                        '       web100_log_entry.snap.SndLimTimeSnd) >= ' + minDuration);
                 } else {
                     whereClauses.push(
                         'web100_log_entry.snap.Duration >= ' + minDuration);
@@ -253,8 +253,8 @@
                     nonNullFields['web100_log_entry.snap.SndLimTimeSnd'] = true;
                     whereClauses.push(
                         '(web100_log_entry.snap.SndLimTimeRwin +\n' +
-                        '    web100_log_entry.snap.SndLimTimeCwnd +\n' +
-                        '    web100_log_entry.snap.SndLimTimeSnd) < ' + maxDuration);
+                        '       web100_log_entry.snap.SndLimTimeCwnd +\n' +
+                        '       web100_log_entry.snap.SndLimTimeSnd) < ' + maxDuration);
                 } else {
                     nonNullFields['web100_log_entry.snap.Duration'] = true;
                     whereClauses.push(
