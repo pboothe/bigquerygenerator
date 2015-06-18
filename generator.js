@@ -1,6 +1,7 @@
 var nl2br = function(str) {
   return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 }
+
 var addCheckbox = function(container, id, labelValue, isChecked) {
   container.append($('<input/>', {
     type: 'checkbox',
@@ -12,6 +13,7 @@ var addCheckbox = function(container, id, labelValue, isChecked) {
   }))
   .append($('<br/>'));
 };
+
 var addDatePicklist = function (container) {
   container.append($('<select/>', {
     type: 'select',
@@ -44,6 +46,7 @@ var addDatePicklist = function (container) {
     currentDate.setMonth(currentDate.getMonth() + 1); // TODO: Fix this.
   }
 };
+
 var addRadioButton = function(container, id, name, labelValue, isChecked) {
   container.append($('<input/>', {
     type: 'radio',
@@ -56,15 +59,71 @@ var addRadioButton = function(container, id, name, labelValue, isChecked) {
     }))
     .append($('<br/>'));
 };
+
+var addIPRangeFilter = function(container) {
+  addCheckbox(container, 'ipRangeCheckbox', "Clients within specified IP ranges (e.g. 1.2.3.4/24, 2.3.4.5/30)", false);
+  container.append($('<input/>', {
+    type: 'text',
+    id: 'ipRange',
+    disabled: true,
+  })).change(updateUI);
+};
+
+function dot2num(dot) {
+  var d = dot.split('.');
+  return ((((((+d[0])*256)+(+d[1]))*256)+(+d[2]))*256)+(+d[3]);
+}
+
+//https://gist.github.com/binarymax/6114792
+var parseCIDR = function(CIDR) {
+  // Beginning IP address
+  var beg = CIDR.substr(CIDR,CIDR.indexOf('/'));
+  var end = beg;
+  var off = (1<<(32-parseInt(CIDR.substr(CIDR.indexOf('/')+1))))-1;
+  var sub = beg.split('.').map(function(a){return parseInt(a)});
+
+  // An IPv4 address is just an UInt32...
+  var buf = new ArrayBuffer(4); //4 octets
+  var i32 = new Uint32Array(buf);
+
+  // Get the UInt32, and add the bit difference
+  i32[0]  = (sub[0]<<24) + (sub[1]<<16) + (sub[2]<<8)
+             + (sub[3]) + off;
+
+  // Recombine into an IPv4 string:
+  var end = Array.apply([], new Uint8Array(buf)).reverse().join('.');
+  return [dot2num(beg),dot2num(end)];
+}
+
+var parseIPRanges = function(ipRangesRaw) {
+  var parsedRanges = [];
+  var ipRangesStripped = ipRangesRaw.replace(/[^0-9\.,/]+/g, '');
+  var ipRanges = ipRangesStripped.split(',');
+  ipRanges.forEach(function (ipRange) {
+    if (!/(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?/.exec(ipRange)) {
+      return;
+    }
+    if (ipRange.indexOf('/') < 0) {
+      ipParsed = dot2num(ipRange);
+      parsedRanges.push([ipParsed, ipParsed]);
+    } else {
+      parsedRanges.push(parseCIDR(ipRange));
+    }
+  });
+  return parsedRanges;
+};
+
 var updateUI = function () {
   updateOptions();
   updateQuery();
 };
+
 var updateOptions = function () {
   $('#packetRetransmitRate').prop('disabled', $('#c2s').is(':checked'));
   $('#averageRTT').prop('disabled', $('#c2s').is(':checked'));
   $('#minimumRTT').prop('disabled', $('#c2s').is(':checked'));
   $('#reachedCongestion').prop('disabled', $('#c2s').is(':checked'));
+  $('#ipRange').prop('disabled', !$('#ipRangeCheckbox').is(':checked'));
 
   // Figure out if geolocation bug affects this table.
   // TODO: Remove this hacky workaround.
@@ -79,6 +138,7 @@ var updateOptions = function () {
   }
   $('#clientGeolocation').prop('disabled', !geolocationAvailable);
 };
+
 var updateQuery = function () {
   selectAttributes = []
   whereClauses = []
@@ -210,6 +270,17 @@ var updateQuery = function () {
               'web100_log_entry.snap.Duration < ' + maxDuration);
     }
   }
+  if ($('#ipRangeCheckbox').is(':checked')) {
+    var ipRanges = parseIPRanges($('#ipRange').val());
+    if (ipRanges.length > 0) {
+      var clientIpClauses = []
+      ipRanges.forEach(function (ipRange) {
+        clientIpClauses.push('PARSE_IP(web100_log_entry.connection_spec.remote_ip) ' +
+            'BETWEEN ' + ipRange[0] + ' AND ' + ipRange[1]);
+      });
+      whereClauses.push('(' + clientIpClauses.join('\n       OR ') + ')');
+    }
+  }
 
   Object.keys(nonNullFields).forEach(function(fieldName) {
       whereClauses.unshift(fieldName + ' IS NOT NULL');
@@ -250,6 +321,7 @@ $(function () {
   addCheckbox($('#optionsFilters'), 'completedThreeWayHandshake', 'Completed three-way TCP handshake', true);
   addCheckbox($('#optionsFilters'), 'metMinDuration', 'Met minimum duration threshold', true);
   addCheckbox($('#optionsFilters'), 'didNotExceedMaxDuration', 'Did not exceed maximum duration threshold', true);
+  addIPRangeFilter($('#optionsFilters'));
 
   updateQuery();
 });
