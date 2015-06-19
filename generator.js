@@ -170,8 +170,8 @@ var updateQuery = function () {
   }
   if (!$('#clientGeolocation').is(':disabled') &&
      $('#clientGeolocation').is(':checked')) {
-    selectAttributes.push('connection_spec.client_geolocation.country_code AS client_country');
     selectAttributes.push('connection_spec.client_geolocation.city AS client_city');
+    selectAttributes.push('connection_spec.client_geolocation.country_code AS client_country');
     selectAttributes.push('connection_spec.client_geolocation.latitude AS client_latitude');
     selectAttributes.push('connection_spec.client_geolocation.longitude AS client_longitude');
   }
