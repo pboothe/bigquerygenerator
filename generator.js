@@ -270,8 +270,8 @@ var updateQuery = function () {
               'web100_log_entry.snap.Duration < ' + maxDuration);
     }
   }
-  if (!$('#hadMinRtt').is(':disabled') &&
-      $('#hadMinRtt').is(':checked')) {
+  if (!$('#hadMinRTT').is(':disabled') &&
+      $('#hadMinRTT').is(':checked')) {
       whereClauses.push('web100_log_entry.snap.CountRTT > 10');
   }
   if ($('#ipRangeCheckbox').is(':checked')) {
@@ -324,8 +324,8 @@ $(function () {
   addCheckbox($('#optionsFilters'), 'exchanged8192', 'Exchanged at least 8192 bytes', true);
   addCheckbox($('#optionsFilters'), 'completedThreeWayHandshake', 'Completed three-way TCP handshake', true);
   addCheckbox($('#optionsFilters'), 'metMinDuration', 'Met minimum duration threshold', true);
-  addCheckbox($('#optionsFilters'), 'hadMinRTT', 'Met minimum RTT measurements', true);
   addCheckbox($('#optionsFilters'), 'didNotExceedMaxDuration', 'Did not exceed maximum duration threshold', true);
+  addCheckbox($('#optionsFilters'), 'hadMinRTT', 'Met minimum RTT measurements', true);
   addIPRangeFilter($('#optionsFilters'));
 
   updateQuery();
