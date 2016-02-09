@@ -270,7 +270,8 @@ var updateQuery = function () {
               'web100_log_entry.snap.Duration < ' + maxDuration);
     }
   }
-  if (!$('#hadMinRTT').is(':disabled') &&
+  if (($('#s2c').is(':checked')) &&
+      !$('#hadMinRTT').is(':disabled') &&
       $('#hadMinRTT').is(':checked')) {
       whereClauses.push('web100_log_entry.snap.CountRTT > 10');
   }
