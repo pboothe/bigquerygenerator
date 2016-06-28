@@ -14,39 +14,6 @@ var addCheckbox = function(container, id, labelValue, isChecked) {
   .append($('<br/>'));
 };
 
-var addDatePicklist = function (container) {
-  container.append($('<select/>', {
-    type: 'select',
-    id: 'dateList',
-  }))
-    .change(updateUI);
-  var currentDate = new Date(2009, 1, 1); // this is actually february
-  var todayMonth = new Date();
-  todayMonth.setDate(1);
-  todayMonth.setHours(0);
-  todayMonth.setMinutes(0);
-  todayMonth.setSeconds(0);
-  while (currentDate <= todayMonth) {
-    month = (currentDate.getMonth() + 1) + '';
-    if (month.length == 1) {
-      month = '0' + month;
-    }
-    formatted_date = currentDate.getFullYear() + '_' + month;
-
-    var sourceTable = '[plx.google:m_lab.' + formatted_date + '.all]';
-    var isSelected = ((currentDate.getYear() == todayMonth.getYear()) &&
-              (currentDate.getMonth() == todayMonth.getMonth()));
-
-    $('#dateList').append($('<option/>', {
-      value: sourceTable,
-      text: formatted_date,
-      selected: (isSelected),
-    }));
-
-    currentDate.setMonth(currentDate.getMonth() + 1); // TODO: Fix this.
-  }
-};
-
 var addRadioButton = function(container, id, name, labelValue, isChecked) {
   container.append($('<input/>', {
     type: 'radio',
@@ -124,19 +91,6 @@ var updateOptions = function () {
   $('#minimumRTT').prop('disabled', $('#c2s').is(':checked'));
   $('#reachedCongestion').prop('disabled', $('#c2s').is(':checked'));
   $('#ipRange').prop('disabled', !$('#ipRangeCheckbox').is(':checked'));
-
-  // Figure out if geolocation bug affects this table.
-  // TODO: Remove this hacky workaround.
-  var dateStr = /\d{4}_\d{2}/.exec($('#dateList').val())[0];
-  var dateParts = dateStr.split('_');
-  var year = parseInt(dateParts[0]);
-  var month = parseInt(dateParts[1]);
-  var selectedDate = new Date(year, month, 1);
-  var geolocationAvailable = true;
-  if (selectedDate < new Date(2012, 5, 1)) {
-    geolocationAvailable = false;
-  }
-  $('#clientGeolocation').prop('disabled', !geolocationAvailable);
 };
 
 var updateQuery = function () {
@@ -298,7 +252,7 @@ var updateQuery = function () {
   query += '  ' + selectAttributes.join(',\n  ');
   query += '\n';
   query += 'FROM\n';
-  query += '  ' + sourceTable + '\n';
+  query += '  [plx.google:m_lab.ndt.all]\n';
   query += 'WHERE\n';
   query += '  ' + whereClauses.join('\n  AND ');
   //query += '\n;';
@@ -307,11 +261,10 @@ var updateQuery = function () {
 $(function () {
   addRadioButton($('#optionsTestType'), 's2c', 'direction', 'Server to Client (Download)', true);
   addRadioButton($('#optionsTestType'), 'c2s', 'direction', 'Client to Server (Upload)', false);
-  addDatePicklist($('#optionsDates'));
   addCheckbox($('#optionsValues'), 'testId', 'Test ID', false);
   addCheckbox($('#optionsValues'), 'logTime', 'Test Time', false);
-  addCheckbox($('#optionsValues'), 'serverIPv4', 'Server IPv4 Address', false);
-  addCheckbox($('#optionsValues'), 'clientIPv4', 'Client IPv4 Address', false);
+  addCheckbox($('#optionsValues'), 'serverIPv4', 'Server IPv4 Address', true);
+  addCheckbox($('#optionsValues'), 'clientIPv4', 'Client IPv4 Address', true);
   addCheckbox($('#optionsValues'), 'clientHostname', 'Client Hostname', false);
   addCheckbox($('#optionsValues'), 'clientApplication', 'Client Application Name', false);
   addCheckbox($('#optionsValues'), 'clientBrowser', 'Client Browser', false);
