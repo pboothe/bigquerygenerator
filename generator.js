@@ -165,7 +165,6 @@ var updateQuery = function () {
   }
 
   whereClauses.push('project = 0');
-  whereClauses.push('web100_log_entry.is_last_entry = True');
 
   if ($('#s2c').is(':checked')) {
       whereClauses.push('connection_spec.data_direction = 1');
